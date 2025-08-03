@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘 뭐 입지?</title>
     <style>
-        /* 기본 스타일 */
         * {
             margin: 0;
             padding: 0;
@@ -39,7 +38,6 @@
             font-size: 16px;
         }
 
-        /* 메인 컨테이너 */
         .container {
             max-width: 1400px;
             margin: 30px auto;
@@ -49,7 +47,7 @@
             gap: 30px;
         }
 
-        /* 왼쪽 날씨 영역 */
+        /* 날씨 영역 */
         .weather-section {
             background: #fff;
             border-radius: 16px;
@@ -181,7 +179,7 @@
             color: #1a1a1a;
         }
 
-        /* 오른쪽 옷차림 추천 영역 */
+        /* 옷차림 추천 영역 */
         .outfit-section {
             background: #fff;
             border-radius: 16px;
@@ -263,7 +261,7 @@
             border: 1px solid #ddd;
         }
 
-        /* 특별 팁 */
+        /* 기타 팁 */
         .special-tips {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -365,7 +363,7 @@
     </div>
 
     <script>
-        // API 키 - 여기에 발급받은 OpenWeatherMap API 키가 입력되어 있습니다
+        // API 키
         const API_KEY = 'cfe991e0dcbd01011c406026c69aaa95';
 
         // 날씨 아이콘 매핑
@@ -386,9 +384,6 @@
             requestLocation();
         });
 
-        /**
-         * 사용자 위치 정보 요청
-         */
         function requestLocation() {
             if (!navigator.geolocation) {
                 showError('이 브라우저는 위치 서비스를 지원하지 않습니다.');
@@ -422,9 +417,7 @@
             );
         }
 
-        /**
-         * 실제 날씨 데이터 가져오기
-         */
+        //날씨 데이터 가져오기
         async function getWeatherData(lat, lon) {
             try {
                 document.getElementById('loadingMessage').innerHTML = '🌤️ 날씨 데이터를 가져오는 중...';
@@ -450,9 +443,7 @@
             }
         }
 
-        /**
-         * 날씨 데이터를 화면에 표시
-         */
+        //날씨 데이터 화면에 띄우기
         function displayWeatherData(currentData, forecastData) {
             const container = document.getElementById('mainContainer');
             
@@ -546,9 +537,7 @@
             `;
         }
 
-        /**
-         * 영어 날씨 설명을 한국어로 번역
-         */
+        //영어 날씨 설명을 한국어로 번역
         function translateWeatherDescription(description) {
             const translations = {
                 'clear sky': '맑음',
@@ -571,9 +560,7 @@
             return translations[description] || description;
         }
 
-        /**
-         * 옷차림 추천 생성
-         */
+        //옷차림 추천
         function generateOutfitRecommendation(currentData, forecastData) {
             const currentTemp = currentData.main.temp;
             const feelsLike = currentData.main.feels_like;
@@ -602,17 +589,17 @@
             if (Math.abs(maxTemp - minTemp) > 8) {
                 tips.push('일교차가 크니 겹겹이 입어서 조절하세요');
             }
-            
+            //습도에 따른 옷차림 추천
             if (humidity > 75) {
                 tips.push('습도가 높아 끈적할 수 있어요');
                 outfitData.accessories.push('흡습속건 소재');
             }
-            
+            // 풍속에 따른 옷차림추천
             if (windSpeed > 4) {
                 tips.push('바람이 강하게 불어요');
                 outfitData.outer.push('바람막이');
             }
-            
+            //날씨에 따른 기타 팁 추천
             if (isRaining) {
                 tips.push('비가 올 예정이니 우산을 챙기세요');
                 outfitData.accessories.push('우산', '방수 신발');
@@ -634,7 +621,7 @@
                     <h3>오늘 날씨 요약</h3>
                     <p>${weatherSummary}</p>
                 </div>
-
+                
                 <div class="outfit-categories">
                     <div class="outfit-category">
                         <div class="category-header">
@@ -686,9 +673,7 @@
             `;
         }
 
-        /**
-         * 온도별 기본 옷차림 추천
-         */
+        //온도별 옷차림 추천
         function getOutfitByTemperature(temp, feelsLike) {
             const effectiveTemp = (temp + feelsLike) / 2;
             
@@ -737,9 +722,7 @@
             }
         }
 
-        /**
-         * 에러 메시지 표시
-         */
+        //에러 메시지
         function showError(message) {
             const container = document.getElementById('mainContainer');
             container.innerHTML = `
