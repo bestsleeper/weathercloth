@@ -1,113 +1,636 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>기온별 옷차림 추천</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      text-align: center;
-      margin-top: 50px;
-      background-color: #f0f8ff;
-      color: #333;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 뭐 입지?</title>
+    <style>
+        /* 기본 스타일 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    h1 {
-      font-size: 2em;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
 
-    #weather, #outfit {
-      font-size: 1.3em;
-      margin: 20px auto;
-      padding: 15px;
-      width: 80%;
-      max-width: 500px;
-      border-radius: 12px;
-      background-color: #ffffff;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
+        /* 헤더 */
+        .header {
+            background: #fff;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-    .note {
-      font-size: 0.9em;
-      color: gray;
-    }
-  </style>
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        /* 시간별 날씨 영역 */
+        .hourly-weather {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .hourly-weather h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .hourly-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .hour-item {
+            display: grid;
+            grid-template-columns: 80px 50px 80px 100px 1fr;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+
+        .hour-time {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .hour-icon {
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .hour-temp {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .hour-desc {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* 현재 날씨 및 추천 영역 */
+        .current-weather {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .weather-card, .outfit-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .weather-card h2, .outfit-card h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .current-temp {
+            font-size: 48px;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .current-desc {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .weather-details {
+            display: grid;
+            gap: 8px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #7f8c8d;
+        }
+
+        .detail-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* 옷차림 추천 */
+        .outfit-summary {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        .outfit-categories {
+            display: grid;
+            gap: 15px;
+        }
+
+        .outfit-category {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .category-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .category-items {
+            list-style: none;
+        }
+
+        .category-items li {
+            padding: 4px 0;
+            color: #555;
+        }
+
+        .category-items li:before {
+            content: "• ";
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        /* 로딩 및 에러 */
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .loading {
+            color: #3498db;
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .retry-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .retry-btn:hover {
+            background: #2980b9;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .hour-item {
+                grid-template-columns: 60px 40px 60px 80px 1fr;
+                font-size: 14px;
+            }
+            
+            .current-temp {
+                font-size: 36px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>오늘의 날씨 & 옷차림 추천</h1>
-  <p class="note">* 위치 권한을 허용해야 현재 날씨 정보가 표시됩니다.</p>
-  <div id="weather">🔄 날씨 정보를 불러오는 중...</div>
-  <div id="outfit"></div>
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>🌤️ 오늘 뭐 입지?</h1>
+        <p>현재 위치의 날씨를 확인하고 적절한 옷차림을 추천해드립니다</p>
+    </div>
 
-  <script>
-    const API_KEY = 'cfe991e0dcbd01011c406026c69aaa95';
+    <!-- 메인 컨테이너 -->
+    <div class="container" id="mainContainer">
+        <div class="loading" id="loadingMessage">
+            📍 위치 정보를 가져오는 중입니다...<br>
+            <small>위치 허용을 해주세요!</small>
+        </div>
+    </div>
 
-    function getLocationAndWeather() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(success, error);
-      } else {
-        document.getElementById("weather").innerText = "위치 정보를 지원하지 않는 브라우저입니다.";
-      }
-    }
+    <script>
+        // API 키 - 여기에 발급받은 OpenWeatherMap API 키가 입력되어 있습니다
+        const API_KEY = 'cfe991e0dcbd01011c406026c69aaa95';
 
-    function success(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      getWeatherByCoords(lat, lon);
-    }
+        // 날씨 아이콘 매핑
+        const weatherIcons = {
+            '01d': '☀️', '01n': '🌙',
+            '02d': '⛅', '02n': '☁️', 
+            '03d': '☁️', '03n': '☁️',
+            '04d': '☁️', '04n': '☁️',
+            '09d': '🌧️', '09n': '🌧️',
+            '10d': '🌦️', '10n': '🌧️',
+            '11d': '⛈️', '11n': '⛈️',
+            '13d': '❄️', '13n': '❄️',
+            '50d': '🌫️', '50n': '🌫️'
+        };
 
-    function error() {
-      document.getElementById("weather").innerText = "위치 정보를 불러오지 못했습니다.";
-    }
+        // 페이지 로드시 위치 정보 요청
+        window.addEventListener('load', function() {
+            requestLocation();
+        });
 
-    async function getWeatherByCoords(lat, lon) {
-      try {
-        const res = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
-        );
-        const data = await res.json();
+        /**
+         * 사용자 위치 정보 요청
+         */
+        function requestLocation() {
+            if (!navigator.geolocation) {
+                showError('이 브라우저는 위치 서비스를 지원하지 않습니다.');
+                return;
+            }
 
-        const temp = data.main.temp;
-        const weather = data.weather[0].main;
-        const city = data.name;
+            // 위치 정보 요청
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    console.log(`위치: ${lat}, ${lon}`);
+                    
+                    // 실제 API 키가 있다면 날씨 데이터 가져오기
+                    if (API_KEY !== 'YOUR_API_KEY_HERE') {
+                        getWeatherData(lat, lon);
+                    } else {
+                        // 데모용 샘플 데이터 사용
+                        loadSampleData();
+                    }
+                },
+                function(error) {
+                    let errorMessage = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = '위치 접근이 거부되었습니다. 브라우저 설정에서 위치 허용을 해주세요.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = '위치 정보를 사용할 수 없습니다.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = '위치 요청 시간이 초과되었습니다.';
+                            break;
+                        default:
+                            errorMessage = '알 수 없는 오류가 발생했습니다.';
+                    }
+                    showError(errorMessage);
+                }
+            );
+        }
 
-        document.getElementById("weather").innerHTML = `📍 위치: ${city}<br>🌡 현재 온도: ${temp}°C (${weather})`;
+        /**
+         * 실제 날씨 데이터 가져오기 (API 키가 있을 때)
+         */
+        async function getWeatherData(lat, lon) {
+            try {
+                // 현재 날씨 데이터
+                const currentResponse = await fetch(
+                    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=kr`
+                );
+                
+                // 시간별 예보 데이터
+                const forecastResponse = await fetch(
+                    `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=kr`
+                );
 
-        suggestOutfit(temp, weather);
-      } catch (err) {
-        document.getElementById("weather").innerText = "날씨 정보를 불러오지 못했습니다.";
-        console.error(err);
-      }
-    }
+                if (!currentResponse.ok || !forecastResponse.ok) {
+                    throw new Error('날씨 데이터를 가져올 수 없습니다.');
+                }
 
-    function suggestOutfit(temp, weather) {
-      let outfit = "";
+                const currentData = await currentResponse.json();
+                const forecastData = await forecastResponse.json();
 
-      if (temp >= 28) {
-        outfit = "민소매, 반팔, 반바지, 린넨 옷";
-      } else if (temp >= 23) {
-        outfit = "반팔, 얇은 셔츠, 면바지";
-      } else if (temp >= 17) {
-        outfit = "긴팔 티, 가디건, 얇은 니트";
-      } else if (temp >= 12) {
-        outfit = "재킷, 니트, 후드티";
-      } else if (temp >= 6) {
-        outfit = "코트, 기모 옷, 히트텍";
-      } else {
-        outfit = "패딩, 목도리, 장갑, 내복";
-      }
+                displayWeatherData(currentData, forecastData);
+                
+            } catch (error) {
+                console.error('날씨 데이터 오류:', error);
+                showError('날씨 정보를 가져오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
+            }
+        }
 
-      if (weather.includes("Rain")) {
-        outfit += " 🌧 (우산 꼭 챙기세요!)";
-      }
-      if (weather.includes("Snow")) {
-        outfit += " ❄️ (눈길 조심! 방한용품 필요)";
-      }
+        /**
+         * 샘플 데이터 로드 (데모용)
+         */
+        function loadSampleData() {
+            const loadingElement = document.getElementById('loadingMessage');
+            loadingElement.innerHTML = '🌤️ 날씨 데이터를 분석하는 중...';
+            
+            // 샘플 현재 날씨 데이터
+            const currentData = {
+                name: '서울',
+                main: {
+                    temp: 32.76,
+                    feels_like: 37.27,
+                    humidity: 55,
+                    pressure: 1002
+                },
+                weather: [{
+                    main: 'Clear',
+                    description: '맑음',
+                    icon: '01d'
+                }],
+                wind: {
+                    speed: 2.57
+                },
+                visibility: 10000
+            };
 
-      document.getElementById("outfit").innerText = `👕 추천 옷차림: ${outfit}`;
-    }
+            // 샘플 시간별 예보 데이터
+            const forecastData = {
+                list: [
+                    { dt_txt: '2025-01-15 12:00:00', main: { temp: 32.76 }, weather: [{ icon: '01d', description: '맑음' }] },
+                    { dt_txt: '2025-01-15 15:00:00', main: { temp: 34.2 }, weather: [{ icon: '01d', description: '맑음' }] },
+                    { dt_txt: '2025-01-15 18:00:00', main: { temp: 31.8 }, weather: [{ icon: '02d', description: '구름조금' }] },
+                    { dt_txt: '2025-01-15 21:00:00', main: { temp: 28.5 }, weather: [{ icon: '02n', description: '구름조금' }] },
+                    { dt_txt: '2025-01-16 00:00:00', main: { temp: 25.2 }, weather: [{ icon: '01n', description: '맑음' }] },
+                    { dt_txt: '2025-01-16 03:00:00', main: { temp: 23.1 }, weather: [{ icon: '01n', description: '맑음' }] },
+                    { dt_txt: '2025-01-16 06:00:00', main: { temp: 24.8 }, weather: [{ icon: '01d', description: '맑음' }] },
+                    { dt_txt: '2025-01-16 09:00:00', main: { temp: 28.3 }, weather: [{ icon: '01d', description: '맑음' }] }
+                ]
+            };
 
-    getLocationAndWeather();
-  </script>
+            setTimeout(() => {
+                displayWeatherData(currentData, forecastData);
+            }, 1000);
+        }
+
+        /**
+         * 날씨 데이터를 화면에 표시
+         */
+        function displayWeatherData(currentData, forecastData) {
+            const container = document.getElementById('mainContainer');
+            
+            // 시간별 날씨 목록 생성
+            const hourlyItems = forecastData.list.slice(0, 8).map(item => {
+                const date = new Date(item.dt_txt);
+                const time = date.getHours() + ':00';
+                const icon = weatherIcons[item.weather[0].icon] || '🌤️';
+                const temp = Math.round(item.main.temp);
+                
+                return `
+                    <div class="hour-item">
+                        <div class="hour-time">${time}</div>
+                        <div class="hour-icon">${icon}</div>
+                        <div class="hour-temp">${temp}°C</div>
+                        <div class="hour-desc">${item.weather[0].description}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // 옷차림 추천 생성
+            const outfitRecommendation = generateOutfitRecommendation(currentData, forecastData);
+
+            container.innerHTML = `
+                <!-- 시간별 날씨 -->
+                <div class="hourly-weather">
+                    <h2>📅 오늘 시간별 날씨</h2>
+                    <div class="hourly-list">
+                        ${hourlyItems}
+                    </div>
+                </div>
+
+                <!-- 현재 날씨 및 옷차림 추천 -->
+                <div class="current-weather">
+                    <!-- 현재 날씨 카드 -->
+                    <div class="weather-card">
+                        <h2>🌡️ 현재 날씨 (${currentData.name})</h2>
+                        <div class="current-temp">${Math.round(currentData.main.temp)}°C</div>
+                        <div class="current-desc">${currentData.weather[0].description}</div>
+                        
+                        <div class="weather-details">
+                            <div class="detail-row">
+                                <span class="detail-label">체감온도</span>
+                                <span class="detail-value">${Math.round(currentData.main.feels_like)}°C</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">습도</span>
+                                <span class="detail-value">${currentData.main.humidity}%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">바람</span>
+                                <span class="detail-value">${currentData.wind.speed} m/s</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">기압</span>
+                                <span class="detail-value">${currentData.main.pressure} hPa</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">가시거리</span>
+                                <span class="detail-value">${(currentData.visibility / 1000).toFixed(1)}km</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 옷차림 추천 카드 -->
+                    <div class="outfit-card">
+                        <h2>👔 오늘의 옷차림 추천</h2>
+                        ${outfitRecommendation}
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * 옷차림 추천 생성
+         */
+        function generateOutfitRecommendation(currentData, forecastData) {
+            const currentTemp = currentData.main.temp;
+            const feelsLike = currentData.main.feels_like;
+            const humidity = currentData.main.humidity;
+            const windSpeed = currentData.wind.speed;
+            const weatherMain = currentData.weather[0].main.toLowerCase();
+            
+            // 하루 최고/최저 온도 계산
+            const todayTemps = forecastData.list.slice(0, 8).map(item => item.main.temp);
+            const maxTemp = Math.max(...todayTemps);
+            const minTemp = Math.min(...todayTemps);
+            
+            // 비/눈 여부 확인
+            const isRaining = weatherMain.includes('rain');
+            const isSnowing = weatherMain.includes('snow');
+            
+            // 기본 옷차림 데이터 가져오기
+            const outfitData = getOutfitByTemperature(currentTemp, feelsLike);
+            
+            // 날씨 분석 요약
+            let weatherSummary = `현재 ${Math.round(currentTemp)}°C`;
+            
+            if (Math.abs(maxTemp - minTemp) > 5) {
+                weatherSummary += `, 오늘 ${Math.round(minTemp)}°C ~ ${Math.round(maxTemp)}°C로 일교차가 큽니다.`;
+            } else {
+                weatherSummary += `, 하루 종일 비슷한 기온을 유지할 예정입니다.`;
+            }
+            
+            if (humidity > 70) {
+                weatherSummary += ' 습도가 높아 끈적할 수 있어요.';
+            }
+            
+            if (windSpeed > 5) {
+                weatherSummary += ' 바람이 강하게 불어요.';
+            }
+            
+            if (isRaining) {
+                weatherSummary += ' 비가 올 예정이니 우산을 챙기세요.';
+                outfitData.accessories.push('우산', '방수 신발');
+            }
+            
+            if (isSnowing) {
+                weatherSummary += ' 눈이 올 예정이니 미끄럼 주의하세요.';
+                outfitData.accessories.push('장갑', '방한 부츠');
+            }
+
+            return `
+                <div class="outfit-summary">
+                    <strong>오늘 날씨 분석:</strong><br>
+                    ${weatherSummary}
+                </div>
+                
+                <div class="outfit-categories">
+                    <div class="outfit-category">
+                        <div class="category-title">👕 상의</div>
+                        <ul class="category-items">
+                            ${outfitData.top.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="outfit-category">
+                        <div class="category-title">👖 하의</div>
+                        <ul class="category-items">
+                            ${outfitData.bottom.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="outfit-category">
+                        <div class="category-title">🧥 겉옷</div>
+                        <ul class="category-items">
+                            ${outfitData.outer.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="outfit-category">
+                        <div class="category-title">👟 신발 & 소품</div>
+                        <ul class="category-items">
+                            ${outfitData.accessories.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * 온도별 기본 옷차림 추천
+         */
+        function getOutfitByTemperature(temp, feelsLike) {
+            const effectiveTemp = (temp + feelsLike) / 2;
+            
+            if (effectiveTemp >= 28) {
+                return {
+                    top: ['민소매', '반팔 티셔츠', '얇은 셔츠'],
+                    bottom: ['반바지', '얇은 바지', '치마'],
+                    outer: ['얇은 가디건 (실내용)'],
+                    accessories: ['샌들', '모자', '선글라스']
+                };
+            } else if (effectiveTemp >= 23) {
+                return {
+                    top: ['반팔 티셔츠', '얇은 블라우스'],
+                    bottom: ['청바지', '면바지'],
+                    outer: ['얇은 가디건', '셔츠'],
+                    accessories: ['운동화', '로퍼']
+                };
+            } else if (effectiveTemp >= 20) {
+                return {
+                    top: ['긴팔 티셔츠', '얇은 니트'],
+                    bottom: ['청바지', '면바지'],
+                    outer: ['후드티', '얇은 자켓'],
+                    accessories: ['운동화', '스니커즈']
+                };
+            } else if (effectiveTemp >= 15) {
+                return {
+                    top: ['긴팔 티셔츠', '니트'],
+                    bottom: ['청바지', '기모바지'],
+                    outer: ['자켓', '가디건'],
+                    accessories: ['운동화', '부츠']
+                };
+            } else if (effectiveTemp >= 10) {
+                return {
+                    top: ['기모 긴팔', '두꺼운 니트'],
+                    bottom: ['기모 청바지', '두꺼운 바지'],
+                    outer: ['코트', '점퍼'],
+                    accessories: ['부츠', '목도리']
+                };
+            } else {
+                return {
+                    top: ['기모 내의', '두꺼운 니트'],
+                    bottom: ['기모 바지', '패딩 바지'],
+                    outer: ['패딩', '두꺼운 코트'],
+                    accessories: ['방한 부츠', '장갑', '목도리', '모자']
+                };
+            }
+        }
+
+        /**
+         * 에러 메시지 표시
+         */
+        function showError(message) {
+            const container = document.getElementById('mainContainer');
+            container.innerHTML = `
+                <div class="error">
+                    ❌ ${message}
+                    <br>
+                    <button class="retry-btn" onclick="requestLocation()">다시 시도</button>
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>
